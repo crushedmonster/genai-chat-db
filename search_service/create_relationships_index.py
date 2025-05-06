@@ -101,19 +101,6 @@ azure_search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
 azure_search_key = os.getenv("AZURE_SEARCH_KEY")
 index_name = "sample-relationships-index"
 
-# Columns to fetch sample distinct values for
-columns_to_sample = [
-    ("SalesLT", "vGetAllCategories", "ParentProductCategoryName"),
-    ("SalesLT", "vGetAllCategories", "ProductCategoryName"),
-    ("SalesLT", "vProductAndDescription", "Name"),
-    ("SalesLT", "vProductAndDescription", "ProductModel"),
-    ("SalesLT", "vProductAndDescription", "Culture"),
-    ("SalesLT", "Address", "StateProvince"),
-    ("SalesLT", "Address", "CountryRegion")
-]
-
-MAX_SAMPLE_VALUES = 5  # Limit distinct values fetched for each column
-
 if __name__ == "__main__":
     relationships = extract_sql_relationships(sql_connection_string)
     print(relationships)
