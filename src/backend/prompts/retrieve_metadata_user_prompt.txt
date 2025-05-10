@@ -1,0 +1,3 @@
+User question: "{user_question}"
+
+List the table names:
