@@ -129,7 +129,8 @@ columns_to_sample = [
     ("SalesLT", "ProductModelProductDescription", "ProductModelID"),    
     ("SalesLT", "ProductModelProductDescription", "ProductDescriptionID"),    
     ("SalesLT", "Address", "StateProvince"),
-    ("SalesLT", "Address", "CountryRegion")
+    ("SalesLT", "Address", "CountryRegion"),
+    ("SalesLT", "CustomerAddress", "AddressType")
 ]
 
 MAX_SAMPLE_VALUES = 5  # Limit distinct values fetched for each column

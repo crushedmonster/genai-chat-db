@@ -57,10 +57,10 @@ def create_search_index(azure_search_endpoint, azure_search_key, index_name):
 
     fields = [
         SimpleField(name="id", type="Edm.String", key=True, filterable=True),
-        SimpleField(name="parent_table", type="Edm.String", filterable=True, searchable=True),
-        SimpleField(name="parent_column", type="Edm.String", filterable=True, searchable=True),
-        SimpleField(name="referenced_table", type="Edm.String", filterable=True, searchable=True),
-        SimpleField(name="referenced_column", type="Edm.String", filterable=True, searchable=True)
+        SearchableField(name="parent_table", type="Edm.String", filterable=True, sortable=True, facetable=True),
+        SearchableField(name="parent_column", type="Edm.String", filterable=True, sortable=True, facetable=True),
+        SearchableField(name="referenced_table", type="Edm.String", filterable=True, sortable=True, facetable=True),
+        SearchableField(name="referenced_column", type="Edm.String", filterable=True, sortable=True, facetable=True)
     ]
 
     index = SearchIndex(name=index_name, fields=fields)
