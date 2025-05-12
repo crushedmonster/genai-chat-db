@@ -1,7 +1,7 @@
 import re
 import sqlparse
 
-from backend.config import SETTINGS
+from genai_chat_db.config import SETTINGS
 
 
 class DatabaseSecurityGuardrails:
@@ -95,11 +95,8 @@ class DatabaseSecurityGuardrails:
                 col_lower = col.lower()
                 
                 # Check if column contains sensitive data
-                is_sensitive = any(
-                    sensitive_term in col_lower 
-                    for sensitive_term in cls.sensitive_pii_columns
-                )
-                
+                is_sensitive = col_lower in cls.sensitive_pii_columns
+
                 # Mask sensitive values
                 if is_sensitive and val is not None:
                     if isinstance(val, str) and len(val) > 4:

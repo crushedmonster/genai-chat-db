@@ -4,11 +4,11 @@ import sqlparse
 from decimal import Decimal
 from openai import AzureOpenAI
 
-from backend.config import SETTINGS
-from backend.search_router import SearchRouter
-from backend.utils.database_helper import DatabaseConnector
-from backend.utils.prompt_loader import PromptLoader
-from backend.utils.database_security import DatabaseSecurityGuardrails
+from genai_chat_db.config import SETTINGS
+from genai_chat_db.search_router import SearchRouter
+from genai_chat_db.utils.database_helper import DatabaseConnector
+from genai_chat_db.utils.prompt_loader import PromptLoader
+from genai_chat_db.utils.database_security import DatabaseSecurityGuardrails
 
 class NaturalLanguageQueryEngine:
     """

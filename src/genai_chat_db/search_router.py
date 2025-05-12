@@ -2,7 +2,7 @@ from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
 
-from backend.utils.prompt_loader import PromptLoader
+from genai_chat_db.utils.prompt_loader import PromptLoader
 
 
 class SearchRouter:

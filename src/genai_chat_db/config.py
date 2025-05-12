@@ -30,7 +30,7 @@ class Settings:
     # Security settings
     ## Define sensitive data patterns and terms
     sensitive_pii_columns = {
-        'password', 'email', 'phone'
+        'PasswordHash', 'PasswordSalt', 'EmailAddress', 'Phone'
     }
     ## SQL injection patterns
     sql_injection_patterns = [
