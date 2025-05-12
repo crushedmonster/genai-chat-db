@@ -27,6 +27,21 @@ class Settings:
     azure_search_endpoint: str = os.getenv("AZURE_SEARCH_ENDPOINT")
     azure_search_key: str = os.getenv("AZURE_SEARCH_KEY")
 
+    # Security settings
+    # Define sensitive data patterns and terms
+    sensitive_pii_columns = {
+        'password', 'email', 'phone'
+    }
+    # SQL injection patterns
+    sql_injection_patterns = [
+        r';\s*(\w+)',  # Multiple statements (although already handled by sqlparse)
+        r'--',  # Comment indicators
+        r'\bUNION\b[\s\S]*?\bSELECT\b', # UNION injections
+        r'OR\s+1\s*=\s*1',  # Tautology attack
+        r'OR\s+\'1\'\s*=\s*\'1\'',
+        r'OR\s+\"1\"\s*=\s*\"1\"',
+        r'WHERE\s+1\s*=\s*1',  # WHERE 1=1 specifically (full-table scan)
+    ]
 
 # Instantiate Settings
 SETTINGS = Settings()

@@ -8,6 +8,7 @@ from backend.config import SETTINGS
 from backend.search_router import SearchRouter
 from backend.utils.database_helper import DatabaseConnector
 from backend.utils.prompt_loader import PromptLoader
+from backend.utils.database_security import DatabaseSecurityGuardrails
 
 class NaturalLanguageQueryEngine:
     """
@@ -94,46 +95,40 @@ class NaturalLanguageQueryEngine:
             list[dict] | None: Query results as a list of dictionaries, 
             or None if the query is invalid or not allowed.
         """
-        if not query or query.strip() == "":
-            print("Empty query provided. Execution skipped.")
-            return None
+        # Validate the query against security guardrails
+        is_valid, error_message = DatabaseSecurityGuardrails.validate_query(query)
 
-        # Parse and validate the SQL command
-        try:
-            parsed = sqlparse.parse(query)
-            if not parsed:
-                print("Invalid SQL query provided.")
-                return None
-                
-            statement = parsed[0]
-            if statement.get_type() != 'SELECT':
-                print("Only SELECT queries are allowed. Query execution skipped.")
-                return None
-        except Exception as e:
-            print(f"Error parsing SQL query: {e}")
-            return None
+        if not is_valid:
+            print(error_message)
+            return None, error_message
 
-        # Safe to proceed with execution
         conn = DatabaseConnector.connect_to_db(SETTINGS.sql_connection_string)
         cursor = conn.cursor()
+
         try:
             cursor.execute(query)
             columns = [column[0] for column in cursor.description]
             rows = cursor.fetchall()
+
             # Convert Decimal values to float
             result = [
                 {col: float(val) if isinstance(val, Decimal) else val for col, val in zip(columns, row)}
                 for row in rows
             ]
-            print(f"Query executed successfully. Rows fetched: {len(result)}")
-            return result
+
+            # Mask sensitive data before returning results
+            masked_results = DatabaseSecurityGuardrails.mask_sensitive_data(result)
+
+            print(f"Query executed successfully. Rows fetched: {len(masked_results)}")
+            return masked_results, None
+
         except Exception as e:
             print(f"Error executing query: {e}")
+            return None, f"Error executing query: {e}"
+
         finally:
             cursor.close()
             conn.close()
-
-        return result
 
     def get_summary(
         self, 
