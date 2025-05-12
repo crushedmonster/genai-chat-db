@@ -78,7 +78,7 @@ class NaturalLanguageQueryEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            temperature=0.3,
+            temperature=0.2,
             model=SETTINGS.azure_deployment_model,
         )
         
@@ -135,8 +135,7 @@ class NaturalLanguageQueryEngine:
         user_question: str, 
         results: list[dict], 
         sql_query: str, 
-        message: str, 
-        n_unique_value: int
+        message: str
     ) -> str:
         """
         Generate a data summary based on query results.
@@ -146,15 +145,15 @@ class NaturalLanguageQueryEngine:
             results (list[dict]): The SQL query results.
             sql_query: The executed SQL query.
             message: Additional explanatory message.
-            n_unique_value: Number of unique sample values to include.
 
         Returns:
             str: Generated summary.
         """
         # Generate statistics for results
-        col_summary_stats = self.get_column_statistics(results, n_unique_value)
+        col_summary_stats = self.get_column_statistics(results)
+        print(f"col_summary_stats: {col_summary_stats }")
         row_summary_stats = self.get_row_statistics(results)
-
+        print(f"row_summary_stats: {row_summary_stats }")
         # Format prompt with all context
         template = PromptLoader.load_prompt("data_summary_prompt.txt")
         prompt = PromptLoader.format_prompt(
@@ -189,12 +188,11 @@ class NaturalLanguageQueryEngine:
             return {"total_rows": 0}
         return {"total_rows": len(rows)}
 
-    def get_column_statistics(self, rows: list[dict], n_unique_value: int) -> dict:
+    def get_column_statistics(self, rows: list[dict]) -> dict:
         """Generate per-column summary statistics.
         
         Args:
             rows: Query result rows.
-            n_unique_value: Number of unique sample values to include.
             
         Returns:
             dict: Dictionary of column statistics.
@@ -202,47 +200,50 @@ class NaturalLanguageQueryEngine:
         if not rows:
             return {}
 
-        column_stats = {}
         columns = rows[0].keys()
+        data_by_column = {col: [row.get(col) for row in rows] for col in columns}
+        categorical_cols = [
+            col for col, values in data_by_column.items()
+            if not col.lower().endswith('id') and not all(isinstance(v, (int, float, type(None))) for v in values)
+        ]
 
-        # Group data by column
-        data_by_column = {col: [] for col in columns}
-        for row in rows:
-            for col in columns:
-                data_by_column[col].append(row.get(col))
-                
-        # Analyse each column
+        column_stats = {}
+
         for col, values in data_by_column.items():
             non_null_values = [v for v in values if v is not None]
-            if not non_null_values:
-                column_stats[col] = {"data_type": "", "sample_values": []}
-                continue
-                
-            # Get unique sample values
-            unique_values = list({v for v in non_null_values})
-            sample_values = unique_values[:n_unique_value]
-            
-            stats = {
-                "sample_values": sample_values,
-                "data_type": type(non_null_values[0]).__name__
-            }
-            
-            # Check if this is an ID column (contains 'id' or all values are unique)
-            is_id_column = ('id' in col.lower() or 
-                           len(set(non_null_values)) == len(non_null_values))
-            
-            # Calculate numeric statistics if appropriate
-            if not is_id_column and all(isinstance(v, (int, float)) for v in non_null_values):
+            data_type = type(non_null_values[0]).__name__ if non_null_values else ""
+
+            stats = {"data_type": data_type}
+            col_is_id = col.lower().endswith('id')
+            is_numeric = all(isinstance(v, (int, float)) for v in non_null_values)
+
+            if is_numeric and not col_is_id and non_null_values:
+                min_value = min(non_null_values)
+                max_value = max(non_null_values)
+                avg_value = round(sum(non_null_values) / len(non_null_values), 2)
+
+                min_rows_info = [
+                    {k: row.get(k) for k in categorical_cols}
+                    for row in rows if row.get(col) == min_value
+                ]
+
+                max_rows_info = [
+                    {k: row.get(k) for k in categorical_cols}
+                    for row in rows if row.get(col) == max_value
+                ]
+
                 stats.update({
-                    "min": min(non_null_values),
-                    "max": max(non_null_values),
-                    "avg": round(sum(non_null_values) / len(non_null_values), 2)
+                    "min": min_value,
+                    "min_rows_info": min_rows_info,
+                    "max": max_value,
+                    "max_rows_info": max_rows_info,
+                    "avg": avg_value
                 })
-            elif is_id_column:
-                stats.update({"aggregation": "skipped"})
-                
+            else:
+                stats["aggregation"] = "skipped"
+
             column_stats[col] = stats
-            
+
         return column_stats
     
     def _parse_sql_response(self, response) -> tuple[str, str]:

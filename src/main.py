@@ -7,7 +7,6 @@ from genai_chat_db.natural_language_query_engine import NaturalLanguageQueryEngi
 # --- Page Configuration ---
 st.set_page_config(page_title="Database Assistant", page_icon="🤖")
 
-
 # --- Minimal CSS Styling ---
 def add_custom_css():
     st.markdown("""
@@ -34,10 +33,10 @@ def add_custom_css():
     </style>
     """, unsafe_allow_html=True)
 
-
 # --- Helper Functions ---
 def escape_markdown_specials(text: str) -> str:
-    """Escape special characters to prevent markdown rendering issues."""
+    """Escape special characters to prevent markdown rendering issues.
+    """
     if not isinstance(text, str):
         return text
 
@@ -45,15 +44,32 @@ def escape_markdown_specials(text: str) -> str:
     text = re.sub(r'(?<!\\)_', r'\_', text)
     return text
 
+def original_session_state_message():
+    """
+    Set streamlit session state's message.
+    """
+    st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": "Hi! I'm your Database Assistant. Ask me anything about your data!",
+            }
+        ]
+
+def clear_chat():
+    """Button to reset chat history.
+    """
+    if st.sidebar.button("🗑️ Reset Chat", use_container_width=True):
+        original_session_state_message()
 
 @st.cache_resource
 def get_query_engine() -> NaturalLanguageQueryEngine:
-    """Initialize and cache the query engine."""
+    """Initialise and cache the query engine.
+    """
     return NaturalLanguageQueryEngine()
 
-
 def generate_response(user_input: str):
-    """Generate assistant's response for a given user input."""
+    """Generate assistant's response for a given user input.
+    """
     with st.spinner("Generating answer..."):
         try:
             sql_query, model_message = query_engine.prompt_sql_command(user_input)
@@ -65,7 +81,7 @@ def generate_response(user_input: str):
                 return error_message or "⚠️ SQL execution failed or blocked by guardrails."
 
             summary = query_engine.get_summary(
-                user_input, results, sql_query, model_message, n_unique_value=5
+                user_input, results, sql_query, model_message
             )
 
             return {
@@ -77,14 +93,16 @@ def generate_response(user_input: str):
         except Exception as e:
             return f"❌ Error:\n\n`{e}`\n\nPlease try again."
 
-
 # --- UI Components ---
 def render_sidebar():
-    """Render the sidebar with examples."""
+    """Render the sidebar with example questions.
+    """
     st.sidebar.header("Try an example:")
     example_questions = [
-        "Show me the top 5 customers by total purchase amount",
-        "Give me a list of orders with sales above $10,000",
+        "Who are the top 10 customers by total purchases?",
+        "What are the most frequently ordered product categories?",
+        "Which shipping company handles the most orders?",
+        "Average shipping time per shipping company?"
     ]
 
     if "example_clicked" not in st.session_state:
@@ -95,11 +113,13 @@ def render_sidebar():
             st.session_state.example_clicked = question
 
     st.sidebar.divider()
+    clear_chat()
+
     st.sidebar.caption("genai-chat-db v0.0.1")
 
-
 def display_chat_messages():
-    """Render the chat history."""
+    """Render the chat history.
+    """
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             content = message["content"]
@@ -120,7 +140,8 @@ def display_chat_messages():
 
 
 def handle_new_user_input():
-    """Handle user input from the chat input box."""
+    """Handle user input from the chat input box.
+    """
     if user_prompt := st.chat_input("Ask a question about your database..."):
         st.session_state.messages.append({"role": "user", "content": user_prompt})
 
@@ -149,7 +170,8 @@ def handle_new_user_input():
 
 
 def handle_example_click():
-    """Handle when an example question is clicked."""
+    """Handle when an example question is clicked.
+    """
     if st.session_state.example_clicked:
         user_prompt = st.session_state.example_clicked
         st.session_state.example_clicked = None
@@ -169,12 +191,7 @@ def main():
     render_sidebar()
 
     if "messages" not in st.session_state:
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "content": "Hi! I'm your Database Assistant. Ask me anything about your data!",
-            }
-        ]
+        original_session_state_message()
 
     handle_example_click()
     display_chat_messages()

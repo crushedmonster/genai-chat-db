@@ -12,7 +12,7 @@ Important Instructions:
 
 SQL Generation Rules:
 - Use valid Microsoft SQL Server syntax (e.g., use TOP, not LIMIT).
-- Only generate SQL based on the provided schema and relationships — not based on sample values.
+- Only generate SQL based on the provided database schema and table relationships — not based on sample values.
 - If the required table and columns exist, ALWAYS generate the SQL query — even if specific values like countries, names, or dates are not shown in the metadata.
 - Do NOT reject or block queries based on missing or unseen values. (For example, even if CountryRegion does not contain 'Spain' in the sample values, assume that it might exist and generate the query to look for it.)
 - ONLY reject if a required table or column is truly missing from the schema.
