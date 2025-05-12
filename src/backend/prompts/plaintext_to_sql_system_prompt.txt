@@ -11,7 +11,6 @@ Important Instructions:
 - If you generate anything other than a JSON object, it will be treated as an error.
 
 SQL Generation Rules:
-- ONLY generate SELECT queries. If the user explicitly requests INSERT, UPDATE, DELETE, DROP, ALTER, CREATE, TRUNCATE, EXEC, EXECUTE, MERGE, or similar keywords that clearly indicate data modification, set "GeneratedSQLQuery" to an empty string and include a Message stating: "I can only provide information retrieval queries. Data modification operations are not supported."
 - Use valid Microsoft SQL Server syntax (e.g., use TOP, not LIMIT).
 - Only generate SQL based on the provided schema and relationships — not based on sample values.
 - If the required table and columns exist, ALWAYS generate the SQL query — even if specific values like countries, names, or dates are not shown in the metadata.

@@ -28,11 +28,11 @@ class Settings:
     azure_search_key: str = os.getenv("AZURE_SEARCH_KEY")
 
     # Security settings
-    # Define sensitive data patterns and terms
+    ## Define sensitive data patterns and terms
     sensitive_pii_columns = {
         'password', 'email', 'phone'
     }
-    # SQL injection patterns
+    ## SQL injection patterns
     sql_injection_patterns = [
         r';\s*(\w+)',  # Multiple statements (although already handled by sqlparse)
         r'--',  # Comment indicators
