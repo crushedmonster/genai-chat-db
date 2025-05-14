@@ -1,0 +1,20 @@
+name: Pylint
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniconda-version: 'latest'
+          activate-environment: genai-chat-db
+          environment-file: conda-env.yaml
+          use-only-tar-bz2: true
+      - name: Run Pylint
+        shell: bash -l {0}
+        run: |
+          pylint src --fail-under=7.0 --ignore=tests --disable=W1202
