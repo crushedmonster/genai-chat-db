@@ -13,8 +13,9 @@ jobs:
           miniconda-version: 'latest'
           activate-environment: genai-chat-db
           environment-file: conda-env.yaml
-          use-only-tar-bz2: true
+          auto-activate-base: false
       - name: Run Pylint
-        shell: bash -l {0}
+        shell: bash -el {0}
         run: |
           pylint src --fail-under=7.0 --ignore=tests --disable=W1202
+          

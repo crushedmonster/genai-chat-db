@@ -11,3 +11,4 @@ dependencies:
     - pyodbc==5.2.0
     - sqlparse==0.5.3
     - pytest==8.3.5
+    - pylint==3.3.7
