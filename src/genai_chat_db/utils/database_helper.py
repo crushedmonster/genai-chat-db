@@ -67,7 +67,7 @@ class DatabaseSchemaLoader:
         # Fetch all tables
         cursor.execute(query)
         tables = [row[0] for row in cursor.fetchall()]
-        
+
         # Iterate through tables to fetch their columns and data types
         for table in tables:
             cursor.execute("""
@@ -76,15 +76,15 @@ class DatabaseSchemaLoader:
             WHERE TABLE_NAME = ?
             """, (table,))
             columns = cursor.fetchall()
-            
+
             # Add each table's schema to the dictionary
             schema[table] = [{"column_name": col[0], "data_type": col[1]} for col in columns]
-        
+
         cursor.close()
         conn.close()
 
         return schema
-    
+
     def get_tables_relationship(self) -> dict:
         """
         Connect to the database and retrieve foreign key relationships between tables.
@@ -121,15 +121,15 @@ class DatabaseSchemaLoader:
 
         cursor.execute(query)
 
-        relationships = {row[0]: {"parent_table": row[1], "parent_column": row[2], 
-                                  "referenced_table": row[3], "referenced_column": row[4]} 
+        relationships = {row[0]: {"parent_table": row[1], "parent_column": row[2],
+                                  "referenced_table": row[3], "referenced_column": row[4]}
                                   for row in cursor.fetchall()}
 
         cursor.close()
         conn.close()
 
         return relationships
-    
+
     def schema_to_text(self, schema: dict) -> str:
         """
         Format schema information into a readable text format.

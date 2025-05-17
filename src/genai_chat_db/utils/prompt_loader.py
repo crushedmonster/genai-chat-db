@@ -24,10 +24,14 @@ class PromptLoader:
         try:
             with open(prompt_path, "r", encoding="utf-8") as f:
                 return f.read()
-        except FileNotFoundError:
-            raise FileNotFoundError(f"Prompt file '{prompt_name}' not found in 'prompts' directory.")
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                f"Prompt file '{prompt_name}' not found in 'prompts' directory."
+            ) from e
         except Exception as e:
-            raise Exception(f"Error loading prompt '{prompt_name}': {str(e)}")
+            raise Exception(
+                f"Error loading prompt '{prompt_name}': {str(e)}"
+            ) from e
 
     @staticmethod
     def format_prompt(template: str, **kwargs) -> str:
@@ -48,6 +52,6 @@ class PromptLoader:
         try:
             return template.format(**kwargs)
         except KeyError as e:
-            raise KeyError(f"Missing placeholder for: {e}")
+            raise KeyError(f"Missing placeholder for: {e}") from e
         except Exception as e:
-            raise Exception(f"Error formatting prompt: {str(e)}")
+            raise Exception(f"Error formatting prompt: {str(e)}") from e

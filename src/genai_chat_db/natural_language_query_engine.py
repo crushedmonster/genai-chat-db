@@ -1,6 +1,5 @@
 import re
 import json
-import sqlparse
 from decimal import Decimal
 from openai import AzureOpenAI
 
@@ -39,7 +38,7 @@ class NaturalLanguageQueryEngine:
             )
         except Exception as e:
             error_msg = f"Failed to configure Azure OpenAI client: {str(e)}"
-            raise RuntimeError(error_msg)
+            raise RuntimeError(error_msg) from e
 
     def prompt_sql_command(self, user_question: str) -> tuple[str, str]:
         """
@@ -61,17 +60,17 @@ class NaturalLanguageQueryEngine:
         # Prepare prompts
         system_template = PromptLoader.load_prompt("plaintext_to_sql_system_prompt.txt")
         system_prompt = PromptLoader.format_prompt(
-            system_template, 
+            system_template,
             schema_info=schema_info,
             table_relationships=relation_info
         )
-        
+
         user_template = PromptLoader.load_prompt("plaintext_to_sql_user_prompt.txt")
         user_prompt = PromptLoader.format_prompt(
-            user_template, 
+            user_template,
             user_question=user_question
         )
-        
+
         # Generate SQL query via LLM
         response = self.openai_client.chat.completions.create(
             messages=[
@@ -81,7 +80,7 @@ class NaturalLanguageQueryEngine:
             temperature=0.2,
             model=SETTINGS.azure_deployment_model,
         )
-        
+
         return self._parse_sql_response(response)
 
     def execute_sql_command(self, query: str) -> list[dict] | None:
@@ -112,7 +111,10 @@ class NaturalLanguageQueryEngine:
 
             # Convert Decimal values to float
             result = [
-                {col: float(val) if isinstance(val, Decimal) else val for col, val in zip(columns, row)}
+                {
+                    col: float(val) if isinstance(val, Decimal) else val
+                    for col, val in zip(columns, row)
+                }
                 for row in rows
             ]
 
@@ -131,10 +133,10 @@ class NaturalLanguageQueryEngine:
             conn.close()
 
     def get_summary(
-        self, 
-        user_question: str, 
-        results: list[dict], 
-        sql_query: str, 
+        self,
+        user_question: str,
+        results: list[dict],
+        sql_query: str,
         message: str
     ) -> str:
         """
@@ -157,14 +159,14 @@ class NaturalLanguageQueryEngine:
         # Format prompt with all context
         template = PromptLoader.load_prompt("data_summary_prompt.txt")
         prompt = PromptLoader.format_prompt(
-            template, 
+            template,
             user_question=user_question,
             sql_query=sql_query,
             row_summary_stats=row_summary_stats,
             col_summary_stats=col_summary_stats,
             message=message
         )
-        
+
         # Generate summary via LLM
         response = self.openai_client.chat.completions.create(
             messages=[{"role": "system", "content": prompt}],
@@ -173,7 +175,7 @@ class NaturalLanguageQueryEngine:
         )
         content = response.choices[0].message.content.strip()
         return content
-    
+
     def get_row_statistics(self, rows: list[dict]) -> dict:
         """
         Generate basic row-level statistics.
@@ -204,7 +206,8 @@ class NaturalLanguageQueryEngine:
         data_by_column = {col: [row.get(col) for row in rows] for col in columns}
         categorical_cols = [
             col for col, values in data_by_column.items()
-            if not col.lower().endswith('id') and not all(isinstance(v, (int, float, type(None))) for v in values)
+            if not col.lower().endswith('id') and not 
+            all(isinstance(v, (int, float, type(None))) for v in values)
         ]
 
         column_stats = {}
@@ -245,7 +248,7 @@ class NaturalLanguageQueryEngine:
             column_stats[col] = stats
 
         return column_stats
-    
+
     def _parse_sql_response(self, response) -> tuple[str, str]:
         """Parse the LLM response to extract SQL query and message.
         

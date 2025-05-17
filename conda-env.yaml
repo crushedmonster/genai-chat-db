@@ -12,3 +12,5 @@ dependencies:
     - sqlparse==0.5.3
     - pytest==8.3.5
     - pylint==3.3.7
+    - streamlit==1.45.0
+    - dotenv==0.9.9

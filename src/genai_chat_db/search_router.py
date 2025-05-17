@@ -45,7 +45,7 @@ class SearchRouter:
         table_names = [idx.strip() for idx in content.split(",") if idx.strip()]
 
         return table_names
-    
+
     def get_index_fields(self, index_name) -> list:
         """
         Retrieve the list of field names for the given Azure Search index.
@@ -66,7 +66,7 @@ class SearchRouter:
             field.name for field in index_schema.fields
             ]
         return fields
-    
+
     def search_relationships_index(self, user_question: str) -> str:
         """
         Perform a search on Azure Search Service and return the 
@@ -108,7 +108,6 @@ class SearchRouter:
             context = "\n".join(relationship_lines)
 
         return context
-
 
     def search_metadata_index(self, user_question: str) -> str:
         """
@@ -159,9 +158,9 @@ class SearchRouter:
                             column_entry += f" [Sample values: {samples_text}]"
                         
                         grouped_metadata[key].append(column_entry)
-            
+
             context = self._format_metadata(grouped_metadata)
-            
+
         return context
 
     def _format_metadata(self, grouped_metadata: dict) -> str:

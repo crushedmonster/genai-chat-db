@@ -1,6 +1,5 @@
 import re
 import streamlit as st
-
 from genai_chat_db.natural_language_query_engine import NaturalLanguageQueryEngine
 
 
@@ -9,6 +8,8 @@ st.set_page_config(page_title="Database Assistant", page_icon="🤖")
 
 # --- Minimal CSS Styling ---
 def add_custom_css():
+    """Add minimal custom CSS to style the Streamlit interface.
+    """
     st.markdown("""
     <style>
         .stApp {
@@ -38,7 +39,7 @@ def escape_markdown_specials(text: str) -> str:
     """Escape special characters to prevent markdown rendering issues.
     """
     if not isinstance(text, str):
-        return text
+        return str(text)
 
     text = text.replace('$', '\\$').replace('%', '\\%')
     text = re.sub(r'(?<!\\)_', r'\_', text)
@@ -62,25 +63,25 @@ def clear_chat():
         original_session_state_message()
 
 @st.cache_resource
-def get_query_engine() -> NaturalLanguageQueryEngine:
+def get_query_engine_instance() -> NaturalLanguageQueryEngine:
     """Initialise and cache the query engine.
     """
     return NaturalLanguageQueryEngine()
 
-def generate_response(user_input: str):
+def generate_response(user_input: str, query_engine_obj: NaturalLanguageQueryEngine):
     """Generate assistant's response for a given user input.
     """
     with st.spinner("Generating answer..."):
         try:
-            sql_query, model_message = query_engine.prompt_sql_command(user_input)
+            sql_query, model_message = query_engine_obj.prompt_sql_command(user_input)
             if not sql_query.strip():
                 return model_message or "❓ Unable to generate a valid SQL for your question."
 
-            results, error_message = query_engine.execute_sql_command(sql_query)
+            results, error_message = query_engine_obj.execute_sql_command(sql_query)
             if results is None:
                 return error_message or "⚠️ SQL execution failed or blocked by guardrails."
 
-            summary = query_engine.get_summary(
+            summary = query_engine_obj.get_summary(
                 user_input, results, sql_query, model_message
             )
 
@@ -139,7 +140,7 @@ def display_chat_messages():
                     st.caption(f"Showing {len(results)} results.")
 
 
-def handle_new_user_input():
+def handle_new_user_input(query_engine_obj: NaturalLanguageQueryEngine):
     """Handle user input from the chat input box.
     """
     if user_prompt := st.chat_input("Ask a question about your database..."):
@@ -149,7 +150,7 @@ def handle_new_user_input():
             st.write(user_prompt)
 
         with st.chat_message("assistant"):
-            assistant_response = generate_response(user_prompt)
+            assistant_response= generate_response(user_prompt, query_engine_obj)
 
             if isinstance(assistant_response, str):
                 st.write(assistant_response)
@@ -169,7 +170,7 @@ def handle_new_user_input():
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
 
-def handle_example_click():
+def handle_example_click(query_engine_obj: NaturalLanguageQueryEngine):
     """Handle when an example question is clicked.
     """
     if st.session_state.example_clicked:
@@ -177,12 +178,13 @@ def handle_example_click():
         st.session_state.example_clicked = None
 
         st.session_state.messages.append({"role": "user", "content": user_prompt})
-        assistant_response = generate_response(user_prompt)
+        assistant_response = generate_response(user_prompt,query_engine_obj)
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
-
 # --- Main App ---
-def main():
+def main() -> None:
+    """Run the main application.
+    """
     add_custom_css()
 
     st.title("Chat with your data")
@@ -193,12 +195,11 @@ def main():
     if "messages" not in st.session_state:
         original_session_state_message()
 
-    handle_example_click()
+    engine = get_query_engine_instance()
+    handle_example_click(engine)
     display_chat_messages()
-    handle_new_user_input()
-
+    handle_new_user_input(engine)
 
 # --- Run the App ---
 if __name__ == "__main__":
-    query_engine = get_query_engine()
     main()

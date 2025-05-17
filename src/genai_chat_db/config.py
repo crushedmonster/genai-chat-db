@@ -16,7 +16,7 @@ class Settings:
     azure_openai_key: str = os.getenv("AZURE_OPENAI_KEY")
     azure_deployment_model: str = os.getenv("AZURE_DEPLOYMENT_MODEL")
     azure_deployment_model_api_version: str = os.getenv("AZURE_DEPLOYMENT_MODEL_API_VERSION")
-    
+
     # Database settings
     sql_driver: str = "{ODBC Driver 18 for SQL Server}"
     sql_connection_string: str = f'Driver={sql_driver};Server=tcp:{os.getenv("SQL_SERVER")},' \
