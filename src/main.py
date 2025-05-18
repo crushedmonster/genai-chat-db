@@ -1,6 +1,8 @@
 import re
 import streamlit as st
+
 from genai_chat_db.natural_language_query_engine import NaturalLanguageQueryEngine
+from genai_chat_db.utils.logger import setup_logger
 
 
 # --- Page Configuration ---
@@ -185,6 +187,7 @@ def handle_example_click(query_engine_obj: NaturalLanguageQueryEngine):
 def main() -> None:
     """Run the main application.
     """
+    setup_logger()
     add_custom_css()
 
     st.title("Chat with your data")

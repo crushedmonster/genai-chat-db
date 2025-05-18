@@ -1,4 +1,5 @@
 import re
+import logging
 import sqlparse
 
 from genai_chat_db.config import SETTINGS
@@ -42,20 +43,23 @@ class DatabaseSecurityGuardrails:
         try:
             parsed = sqlparse.parse(query)
             if not parsed:
-                return (False, "Invalid SQL query provided.")
+                warning_message = "Invalid SQL query provided."
+                logging.warning(warning_message)
+                return (False, warning_message)
 
             statement = parsed[0]
             if statement.get_type() != 'SELECT':
-                return (
-                        False,
-                        f"[Security block] Destructive operation '{statement.get_type()}' "
-                        f"is not allowed"
-                    )
+                error_message = f"[Security block] Destructive operation '{statement.get_type()}' " \
+                                f"is not allowed"
+                logging.error(error_message)
+                return (False, error_message)
             return True, None
 
         except Exception as e:
             # If parsing fails, block the query to be safe
-            return False, f"Failed to validate query safety: {str(e)}"
+            warning_message = f"Failed to validate query safety: {str(e)}"
+            logging.warning(warning_message)
+            return False, warning_message
 
     @classmethod
     def check_for_sql_injection(cls, query: str) -> tuple[bool, str | None]:
@@ -65,11 +69,10 @@ class DatabaseSecurityGuardrails:
         for pattern in cls.sql_injection_patterns :
             match = re.search(pattern, query, re.IGNORECASE)
             if match:
-                return (
-                    False,
-                    f"[Security block] Potential SQL injection detected with "
-                    f"pattern: {match.group(0)}"
-                )
+                error_message = f"[Security block] Potential SQL injection detected with " \
+                                f"pattern: {match.group(0)}"
+                logging.error(error_message)
+                return (False, error_message)
 
         return True, None
 

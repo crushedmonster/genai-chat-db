@@ -1,4 +1,7 @@
+import logging
 import pyodbc
+
+from genai_chat_db.exceptions.error import DatabaseConnectionError
 
 
 class DatabaseConnector:
@@ -18,13 +21,17 @@ class DatabaseConnector:
             pyodbc.Connection: A live connection object to the database.
 
         Raises:
-            Exception: If the database connection attempt fails.
+            DatabaseConnectionError: If the database connection attempt fails.
+            The error is logged with traceback details.
         """
         try:
             conn = pyodbc.connect(connection_string)
+            logging.info("Successfully connected to the database.")
             return conn
         except pyodbc.Error as error:
-            raise Exception(f'Database connection failed: {str(error)}') from error
+            error_message = f"Database connection failed: {error}"
+            logging.error(error_message, exc_info=True)
+            raise DatabaseConnectionError(error_message) from error
 
 
 # NOTE: This class is currently not in use.
@@ -90,7 +97,8 @@ class DatabaseSchemaLoader:
         Connect to the database and retrieve foreign key relationships between tables.
 
         Returns:
-            dict: A dictionary mapping constraint names to parent and referenced table/column details.
+            dict: A dictionary mapping constraint names to parent and referenced 
+            table/column details.
         """
         # Connect to the database
         conn = DatabaseConnector.connect_to_db(self.connection_string)

@@ -1,7 +1,9 @@
+import logging
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
 
+from genai_chat_db.exceptions.error import AzureSearchConfigurationError
 from genai_chat_db.utils.prompt_loader import PromptLoader
 
 
@@ -12,6 +14,46 @@ class SearchRouter:
     def __init__(self, azure_openai_client, settings):
         self.azure_openai_client = azure_openai_client
         self.settings = settings
+
+    def _configure_azure_search_index_client(self) -> SearchIndexClient:
+        """
+        Configure and return an Azure SearchIndexClient.
+
+        Returns:
+            SearchIndexClient: Configured Azure Search index client.
+
+        """
+                endpoint=self.settings.azure_search_endpoint,
+                credential=AzureKeyCredential(self.settings.azure_search_key),
+            )
+        except Exception as e:
+            error_msg = f"Failed to configure Azure Search Index client: {str(e)}"
+            logging.error(error_msg, exc_info=True)
+            raise AzureSearchConfigurationError(error_msg) from e
+
+    def _configure_azure_search_client(self, index_name: str) -> SearchClient:
+        """
+        Configure and return an Azure SearchClient for a specific index.
+
+        Args:
+            index_name (str): The Azure Search index name.
+
+        Returns:
+            SearchClient: Configured Azure Search client for the index.
+
+        Raises:
+            AzureSearchConfigurationError: If client configuration fails.
+        """
+        try:
+            return SearchClient(
+                endpoint=self.settings.azure_search_endpoint,
+                index_name=index_name,
+                credential=AzureKeyCredential(self.settings.azure_search_key),
+            )
+        except Exception as e:
+            error_msg = f"Failed to configure Azure Search client: {str(e)}"
+            logging.error(error_msg, exc_info=True)
+            raise AzureSearchConfigurationError(error_msg) from e
 
     def retrieve_table_names(self, user_question: str) -> list:
         """
@@ -56,10 +98,7 @@ class SearchRouter:
         Returns:
             list: A list containing the names of the fields in the index.
         """
-        index_client = SearchIndexClient(
-            endpoint=self.settings.azure_search_endpoint,
-            credential=AzureKeyCredential(self.settings.azure_search_key)
-        )
+        index_client = self._configure_azure_search_index_client()
         index_schema = index_client.get_index(index_name)
 
         fields = [
@@ -83,11 +122,7 @@ class SearchRouter:
         table_names = self.retrieve_table_names(user_question)
 
         if table_names:
-            search_client = SearchClient(
-                endpoint=self.settings.azure_search_endpoint,
-                index_name="sample-relationships-index",
-                credential=AzureKeyCredential(self.settings.azure_search_key)
-            )
+            search_client = self._configure_azure_search_client("sample-relationships-index")
 
             relationship_lines = ["Table Relationships:"]
 
@@ -109,6 +144,7 @@ class SearchRouter:
 
         return context
 
+
     def search_metadata_index(self, user_question: str) -> str:
         """
         Search the Azure Search Service for metadata and return it
@@ -126,11 +162,7 @@ class SearchRouter:
         grouped_metadata = {}
 
         if table_names:
-            search_client = SearchClient(
-                endpoint=self.settings.azure_search_endpoint,
-                index_name="sample-metadata-index",
-                credential=AzureKeyCredential(self.settings.azure_search_key)
-            )
+            search_client = self._configure_azure_search_client("sample-metadata-index")
 
             for table_name in table_names:
                 search_results = search_client.search(table_name)
@@ -156,7 +188,7 @@ class SearchRouter:
                         if sample_values:
                             samples_text = ", ".join(map(str, sample_values))
                             column_entry += f" [Sample values: {samples_text}]"
-                        
+
                         grouped_metadata[key].append(column_entry)
 
             context = self._format_metadata(grouped_metadata)

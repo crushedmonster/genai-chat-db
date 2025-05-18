@@ -43,5 +43,11 @@ class Settings:
         r'WHERE\s+1\s*=\s*1',  # WHERE 1=1 specifically (full-table scan)
     ]
 
+    # Logging configuration
+    ## Logging level (INFO, ERROR, etc.)
+    LOG_LEVEL: str = "INFO"
+    ## Timestamp format for logs
+    LOG_TIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
+
 # Instantiate Settings
 SETTINGS = Settings()

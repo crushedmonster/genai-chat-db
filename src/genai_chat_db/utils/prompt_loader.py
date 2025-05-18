@@ -1,4 +1,7 @@
+import logging
 from pathlib import Path
+
+from genai_chat_db.exceptions.error import PromptLoadingError
 
 
 class PromptLoader:
@@ -25,13 +28,13 @@ class PromptLoader:
             with open(prompt_path, "r", encoding="utf-8") as f:
                 return f.read()
         except FileNotFoundError as e:
-            raise FileNotFoundError(
-                f"Prompt file '{prompt_name}' not found in 'prompts' directory."
-            ) from e
+            error_message = f"Prompt file '{prompt_name}' not found in 'prompts' directory."
+            logging.error(error_message, exc_info=True)
+            raise PromptLoadingError(error_message) from e
         except Exception as e:
-            raise Exception(
-                f"Error loading prompt '{prompt_name}': {str(e)}"
-            ) from e
+            error_message = f"Error loading prompt '{prompt_name}': {str(e)}"
+            logging.error(error_message, exc_info=True)
+            raise PromptLoadingError(error_message) from e
 
     @staticmethod
     def format_prompt(template: str, **kwargs) -> str:
@@ -52,6 +55,10 @@ class PromptLoader:
         try:
             return template.format(**kwargs)
         except KeyError as e:
-            raise KeyError(f"Missing placeholder for: {e}") from e
+            error_message = f"Missing placeholder for: {e}"
+            logging.error(error_message, exc_info=True)
+            raise KeyError(error_message) from e
         except Exception as e:
-            raise Exception(f"Error formatting prompt: {str(e)}") from e
+            error_message = f"Error formatting prompt: {e}"
+            logging.error(error_message, exc_info=True)
+            raise PromptLoadingError(error_message) from e

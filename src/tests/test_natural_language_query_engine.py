@@ -2,6 +2,7 @@ import pytest
 
 from genai_chat_db.natural_language_query_engine import NaturalLanguageQueryEngine
 
+# pylint: disable=all
 
 @pytest.fixture(scope="module")
 def engine():

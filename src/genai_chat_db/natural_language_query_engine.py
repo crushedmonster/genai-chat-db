@@ -1,10 +1,12 @@
 import re
 import json
+import logging
 from decimal import Decimal
 from openai import AzureOpenAI
 
 from genai_chat_db.config import SETTINGS
 from genai_chat_db.search_router import SearchRouter
+from genai_chat_db.exceptions.error import AzureOpenAIConfigurationError, QueryExecutionError
 from genai_chat_db.utils.database_helper import DatabaseConnector
 from genai_chat_db.utils.prompt_loader import PromptLoader
 from genai_chat_db.utils.database_security import DatabaseSecurityGuardrails
@@ -28,7 +30,7 @@ class NaturalLanguageQueryEngine:
             AzureOpenAI: Configured OpenAI client
             
         Raises:
-            RuntimeError: If client configuration fails
+            AzureOpenAIConfigurationError: If client configuration fails
         """
         try:
             return AzureOpenAI(
@@ -38,7 +40,8 @@ class NaturalLanguageQueryEngine:
             )
         except Exception as e:
             error_msg = f"Failed to configure Azure OpenAI client: {str(e)}"
-            raise RuntimeError(error_msg) from e
+            logging.error(error_msg, exc_info=True)
+            raise AzureOpenAIConfigurationError(error_msg) from e
 
     def prompt_sql_command(self, user_question: str) -> tuple[str, str]:
         """
@@ -121,11 +124,11 @@ class NaturalLanguageQueryEngine:
             # Mask sensitive data before returning results
             masked_results = DatabaseSecurityGuardrails.mask_sensitive_data(result)
 
-            print(f"Query executed successfully. Rows fetched: {len(masked_results)}")
+            logging.info("Query executed successfully. Rows fetched: %d", len(masked_results))
             return masked_results, None
 
-        except Exception as e:
-            print(f"Error executing query: {e}")
+        except QueryExecutionError as e:
+            logging.error("Error executing query: %s", e)
             return None, f"Error executing query: {e}"
 
         finally:
@@ -153,9 +156,10 @@ class NaturalLanguageQueryEngine:
         """
         # Generate statistics for results
         col_summary_stats = self.get_column_statistics(results)
-        print(f"col_summary_stats: {col_summary_stats }")
+        logging.info("Column summary statistics: %s", col_summary_stats)
         row_summary_stats = self.get_row_statistics(results)
-        print(f"row_summary_stats: {row_summary_stats }")
+        logging.info("Row summary statistics: %s", row_summary_stats)
+
         # Format prompt with all context
         template = PromptLoader.load_prompt("data_summary_prompt.txt")
         prompt = PromptLoader.format_prompt(
@@ -181,7 +185,7 @@ class NaturalLanguageQueryEngine:
         Generate basic row-level statistics.
         
         Args:
-            rows: Query result rows.
+            rows (list[dict]): Query result rows.
             
         Returns:
             dict: Dictionary of row statistics.
@@ -190,11 +194,12 @@ class NaturalLanguageQueryEngine:
             return {"total_rows": 0}
         return {"total_rows": len(rows)}
 
-    def get_column_statistics(self, rows: list[dict]) -> dict:
+    def get_column_statistics(self, rows: list[dict], info_sample_limit: int = 5) -> dict:
         """Generate per-column summary statistics.
         
         Args:
-            rows: Query result rows.
+            rows (list[dict]): Query result rows.
+            info_sample_limit (int): Max number of rows to include in min/max info.
             
         Returns:
             dict: Dictionary of column statistics.
@@ -206,7 +211,7 @@ class NaturalLanguageQueryEngine:
         data_by_column = {col: [row.get(col) for row in rows] for col in columns}
         categorical_cols = [
             col for col, values in data_by_column.items()
-            if not col.lower().endswith('id') and not 
+            if not col.lower().endswith('id') and not
             all(isinstance(v, (int, float, type(None))) for v in values)
         ]
 
@@ -225,21 +230,22 @@ class NaturalLanguageQueryEngine:
                 max_value = max(non_null_values)
                 avg_value = round(sum(non_null_values) / len(non_null_values), 2)
 
-                min_rows_info = [
+                # Limit rows shown in info
+                min_rows = [
                     {k: row.get(k) for k in categorical_cols}
                     for row in rows if row.get(col) == min_value
-                ]
+                ][:info_sample_limit]
 
-                max_rows_info = [
+                max_rows = [
                     {k: row.get(k) for k in categorical_cols}
                     for row in rows if row.get(col) == max_value
-                ]
+                ][:info_sample_limit]
 
                 stats.update({
                     "min": min_value,
-                    "min_rows_info": min_rows_info,
+                    "min_rows_info": min_rows,
                     "max": max_value,
-                    "max_rows_info": max_rows_info,
+                    "max_rows_info": max_rows,
                     "avg": avg_value
                 })
             else:
@@ -259,20 +265,20 @@ class NaturalLanguageQueryEngine:
             tuple[str, str]: sql_query, message
         """
         content = response.choices[0].message.content.strip()
-        print(content)
+        logging.info("Generated SQL command and message: %s", content)
 
         try:
             result = json.loads(content)
         except json.JSONDecodeError:
             match = re.search(r'\{.*?\}', content, re.DOTALL)
             if not match:
-                print("Error: LLM response is not valid JSON.")
+                logging.error("Error: LLM response is not valid JSON.")
                 return "", "Failed to parse LLM output."
 
             try:
                 result = json.loads(match.group(0))
             except json.JSONDecodeError:
-                print("Error: Regex-extracted content is still not valid JSON.")
+                logging.error("Error: Regex-extracted content is still not valid JSON.")
                 return "", "Failed to parse LLM output."
 
         sql_query = result.get("GeneratedSQLQuery", "")
