@@ -53,6 +53,7 @@ class AzureSearchConfigurationError(DatabaseAssistantError):
     - Network/connectivity issues with Azure Search
     """
 
+
 class QueryExecutionError(DatabaseAssistantError):
     """
     Raised when executing a SQL query results in an error.

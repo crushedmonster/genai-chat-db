@@ -1,0 +1,35 @@
+# Ignore Python bytecode files
+__pycache__/
+*/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environments
+venv/
+env/
+*.env
+
+# Ignore log files
+*.log
+logs/
+
+# Ignore IDE/editor configuration files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore test files and directories
+tests/
+*/tests/
+*.test
+*.spec
+*.pytest_cache/
+
+# Ignore other unnecessary files
+*.git
+*.github
+*.gitignore
+*.DS_Store
+*.db

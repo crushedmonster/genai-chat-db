@@ -22,7 +22,11 @@ class SearchRouter:
         Returns:
             SearchIndexClient: Configured Azure Search index client.
 
+        Raises:
+            AzureSearchConfigurationError: If client configuration fails.
         """
+        try:
+            return SearchIndexClient(
                 endpoint=self.settings.azure_search_endpoint,
                 credential=AzureKeyCredential(self.settings.azure_search_key),
             )
