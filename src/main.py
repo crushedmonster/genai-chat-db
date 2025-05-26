@@ -184,7 +184,7 @@ def handle_example_click(query_engine_obj: NaturalLanguageQueryEngine):
         st.session_state.messages.append({"role": "assistant", "content": assistant_response})
 
 # --- Main App ---
-def main() -> None:
+def main():
     """Run the main application.
     """
     setup_logger()
