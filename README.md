@@ -29,7 +29,7 @@ This solution's backend is written in Python.
 - **CI/CD Pipeline**: Uses GitHub Actions to build, retag, and push Docker images to Azure Container Registry (ACR), and deploy them to Azure Container Apps.
 
 ## Architecture Diagram
-[Placeholder for Architecture Diagram]
+![Simplified Architecture Diagram](docs/images/simple_arch_diagram.JPG)
 
 ## Approach
 The solution follows a Retrieval-Augmented Generation (RAG) approach to enable natural language interaction with a structured database:
