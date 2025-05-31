@@ -13,7 +13,7 @@ This solution's backend is written in Python.
 ### [Optional] For Deployment
 - **Container Registry**: Azure Container Registry (ACR)
 - **App Hosting**: Azure Container Apps
-- **CI/CD Pipeline**: Uses GitHub Actions for build, retag, and push to Azure Container Registry (ACR).
+- **CI/CD Pipeline**: Uses GitHub Actions to build, retag, and push Docker images to Azure Container Registry (ACR), and deploy them to Azure Container Apps.
 
 ## Architecture Diagram
 [Placeholder for Architecture Diagram]
@@ -100,8 +100,10 @@ Before you begin, make sure the following are installed and set up:
   - Azure OpenAI Service
   - Azure AI Search
   - Azure SQL Database
+  - [Optional] Azure Container Registry (ACR)
+  - [Optional] Azure Container App
 
-Refer to the documentation for guidance on setting up these services.
+Refer to the [documentation](./docs) for guidance on setting up these services.
 
 > Note: To reduce costs, consider using free tiers or Azure Free Credits.
 
@@ -212,7 +214,7 @@ Add the following:
 
 Instead of using a `.env` file, each variable required by the application can be manually configured in the **Azure Container App** under:
 
-> Azure Portal > Your Container App > Settings > Application > Containers > Environment Variables
+** Azure Portal > Your Container App > Settings > Application > Containers > Environment Variables**
 
 Define the following environment variables:
 
@@ -222,7 +224,7 @@ Define the following environment variables:
 |---------------|-----------------------------------------------|
 | `SQL_SERVER`  | The host of your Azure SQL Server             |
 | `SQL_DATABASE`| The name of your Azure SQL database           |
-| `SQL_USERNAME`| The username used to authenticate             |
+| `SQL_USERNAME`| The username used to authenticate (read-only access) |
 | `SQL_PASSWORD`| The password used for SQL authentication      |
 | `SQL_PORT`    | SQL Server port (default: `1433`)             |
 
