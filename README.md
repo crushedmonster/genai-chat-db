@@ -3,6 +3,19 @@ This solution leverages Generative AI to enable non-technical users to interact 
 
 This solution's backend is written in Python.
 
+## Table of Contents
+1. [Architecture Overview](#architecture-overview)
+2. [Architecture Diagram](#architecture-diagram)
+3. [Approach](#approach)
+4. [Security Guardrails](#security-guardrails)
+5. [Sample Demonstration](#sample-demonstration)
+6. [Getting Started](#getting-started)
+   - [Prerequisites](#prerequisites)
+   - [Installation Options](#installation-options)
+     - [Option 1: Run locally with Conda](#option-1-run-locally-with-conda)
+     - [Option 2: Run with Docker](#option-2-run-with-docker)
+7. [Deployment (Optional)](#deployment-optional)
+
 ##  Architecture Overview
 - **Frontend:** Streamlit
 - **Backend:** Python (using modular imports)
@@ -142,7 +155,7 @@ From the project root, launch the app using Streamlit:
 streamlit run src/app.py
 ```
 
-The app will open in your browser at: http://localhost:8051
+The app will open in your browser at: `http://localhost:8051`
 
 #### Option 2: Run with Docker
 
@@ -162,7 +175,7 @@ docker run --env-file "/path/to/.env" -p 8501:8501 genai-chat-db
 > Note: Make sure to replace "/path/to/.env" with the full path to your .env file.
 > The .env file should contain your Azure service credentials and endpoints, and match the format in [`.example.env`](.example.env).
 
-The application will be available at: http://localhost:8501
+The application will be available at: `http://localhost:8501`
 
 ### Deployment (Optional)
 
