@@ -283,4 +283,4 @@ Here are several enhancements that could improve the architecture, maintainabili
   Refactor the backend into a standalone FastAPI application. This decouples it from the frontend, allowing independent development and scaling.
 
 - **Flexible Frontend Options**  
-  Continue using [Streamlit](https://streamlit.io/) for rapid prototyping or explore alternative UI frameworks for a more polished user experience.
+  Continue using Streamlit for rapid prototyping or explore alternative UI frameworks for a more polished user experience.
