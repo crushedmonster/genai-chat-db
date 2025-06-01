@@ -97,7 +97,7 @@ On average, these top customers have spent $81,175.88.
 ![Chat screen 2](docs/images/chatscreen_2.JPG)
 
 ### Demo Video
-[Here's a video demo of the app.](insert-youtube-pitch-vid-here)
+[Here's a video demo of the app.](https://youtu.be/PNldPoSFjAA)
 
 
 ## Getting Started
@@ -116,9 +116,9 @@ Before you begin, make sure the following are installed and set up:
   - [Optional] Azure Container Registry (ACR)
   - [Optional] Azure Container App
 
-Refer to the [documentation](./docs) for guidance on setting up these services.
+  Refer to the [documentation](./docs) for guidance on setting up these services.
 
-> Note: To reduce costs, consider using free tiers or Azure Free Credits.
+  > Note: To reduce costs, consider using free tiers or Azure Free Credits.
 
 ### Installation Options
 You can choose to run the application locally using either Conda or Docker:
@@ -227,7 +227,7 @@ Add the following:
 
 Instead of using a `.env` file, each variable required by the application can be manually configured in the **Azure Container App** under:
 
-** Azure Portal > Your Container App > Settings > Application > Containers > Environment Variables**
+**Azure Portal > Your Container App > Settings > Application > Containers > Environment Variables**
 
 Define the following environment variables:
 
