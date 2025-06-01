@@ -118,7 +118,7 @@ def render_sidebar():
     st.sidebar.divider()
     clear_chat()
 
-    st.sidebar.caption("genai-chat-db v0.0.1")
+    st.sidebar.caption("genai-chat-db v1.0.0")
 
 def display_chat_messages():
     """Render the chat history.

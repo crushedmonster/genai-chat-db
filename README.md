@@ -267,3 +267,20 @@ It is automatically triggered when:
 - A new Git tag starting with `v` is pushed (e.g., `v1.0.0`)
 
 You can modify the workflow as needed.
+
+
+## Potential Improvements
+
+Here are several enhancements that could improve the architecture, maintainability, and user experience of the project:
+
+- **Add Chat Feature with Memory Store**  
+  Implement a conversational interface with memory capabilities to enable contextual and continuous interactions.
+
+- **Infrastructure as Code**  
+  Use Terraform scripts to define and manage infrastructure, ensuring reproducibility and simplifying deployment.
+
+- **Modular Backend Architecture**  
+  Refactor the backend into a standalone FastAPI application. This decouples it from the frontend, allowing independent development and scaling.
+
+- **Flexible Frontend Options**  
+  Continue using [Streamlit](https://streamlit.io/) for rapid prototyping or explore alternative UI frameworks for a more polished user experience.
